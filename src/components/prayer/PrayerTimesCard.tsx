@@ -20,9 +20,8 @@ import {
   INDONESIAN_CITIES, 
   getPrayerTimesByCity, 
   getPrayerTimesByCoords, 
-  getNextPrayer, 
-  calculateQiblaDirection,
-  CityOption 
+  getNextPrayer,
+  getCityTimezone 
 } from "@/lib/api/prayer";
 import { useQuranStore } from "@/lib/store/useQuranStore";
 import { cn } from "@/lib/utils";
@@ -35,17 +34,36 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
   const [data, setData] = useState<PrayerData>(initialData);
   const [selectedCity, setSelectedCity] = useState("Jakarta");
   const [loading, setLoading] = useState(false);
-  const [nextInfo, setNextInfo] = useState(() => getNextPrayer(initialData.timings));
+  const [nextInfo, setNextInfo] = useState(() =>
+    getNextPrayer(initialData.timings, initialData.meta.timezone || "Asia/Jakarta")
+  );
   const { prayerChecklist, togglePrayerStatus } = useQuranStore();
+
+  // Client-side refresh on mount to sync with user's client time
+  useEffect(() => {
+    let isMounted = true;
+    const tz = getCityTimezone(selectedCity);
+    getPrayerTimesByCity(selectedCity).then((res) => {
+      if (isMounted && res) {
+        setData(res);
+        setNextInfo(getNextPrayer(res.timings, res.meta.timezone || tz));
+      }
+    }).catch(console.error);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedCity]);
 
   useEffect(() => {
     const timer = setInterval(() => {
       if (data?.timings) {
-        setNextInfo(getNextPrayer(data.timings));
+        const tz = data.meta?.timezone || getCityTimezone(selectedCity);
+        setNextInfo(getNextPrayer(data.timings, tz));
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [data]);
+  }, [data, selectedCity]);
 
   const handleCitySelect = async (cityName: string) => {
     setSelectedCity(cityName);
@@ -53,6 +71,8 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
     try {
       const res = await getPrayerTimesByCity(cityName);
       setData(res);
+      const tz = res.meta?.timezone || getCityTimezone(cityName);
+      setNextInfo(getNextPrayer(res.timings, tz));
     } catch (e) {
       console.error(e);
     } finally {
@@ -72,6 +92,7 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
             );
             setData(res);
             setSelectedCity("Lokasi Saya (GPS)");
+            setNextInfo(getNextPrayer(res.timings, res.meta?.timezone || "Asia/Jakarta"));
           } catch (e) {
             console.error(e);
           } finally {
@@ -113,7 +134,7 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
               Jadwal Shalat Wilayah {selectedCity}
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              {data.date.gregorian.weekday.en}, {data.date.gregorian.date} • {data.meta.timezone}
+              {data.date.gregorian.weekday.en}, {data.date.gregorian.date} • {data.meta.timezone || "Asia/Jakarta"}
             </p>
           </div>
 
@@ -168,7 +189,7 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
             </div>
           </div>
           <div className="text-xs text-emerald-100 bg-black/15 px-3.5 py-2 rounded-xl self-start sm:self-auto border border-white/10">
-            Kementerian Agama RI (Metode Resmi)
+            Zona: {data.meta.timezone || "Asia/Jakarta"} • Kemenag RI
           </div>
         </div>
 

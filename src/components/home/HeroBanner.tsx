@@ -14,7 +14,12 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { PrayerData } from "@/lib/types";
-import { getNextPrayer, INDONESIAN_CITIES, getPrayerTimesByCity } from "@/lib/api/prayer";
+import { 
+  getNextPrayer, 
+  INDONESIAN_CITIES, 
+  getPrayerTimesByCity,
+  getCityTimezone 
+} from "@/lib/api/prayer";
 import { useQuranStore } from "@/lib/store/useQuranStore";
 
 interface HeroBannerProps {
@@ -25,18 +30,37 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
   const [prayerData, setPrayerData] = useState<PrayerData>(initialPrayerData);
   const [selectedCity, setSelectedCity] = useState("Jakarta");
   const [loadingCity, setLoadingCity] = useState(false);
-  const [nextPrayerInfo, setNextPrayerInfo] = useState(() => getNextPrayer(initialPrayerData.timings));
+  const [nextPrayerInfo, setNextPrayerInfo] = useState(() =>
+    getNextPrayer(initialPrayerData.timings, initialPrayerData.meta.timezone || "Asia/Jakarta")
+  );
   const { lastRead, streak, khatam } = useQuranStore();
 
-  // Timer interval for real-time countdown
+  // Client-side refresh on mount to sync browser time with selected city
+  useEffect(() => {
+    let isMounted = true;
+    const tz = getCityTimezone(selectedCity);
+    getPrayerTimesByCity(selectedCity).then((data) => {
+      if (isMounted && data) {
+        setPrayerData(data);
+        setNextPrayerInfo(getNextPrayer(data.timings, data.meta.timezone || tz));
+      }
+    }).catch(console.error);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedCity]);
+
+  // Real-time ticking countdown timer (every second)
   useEffect(() => {
     const timer = setInterval(() => {
       if (prayerData?.timings) {
-        setNextPrayerInfo(getNextPrayer(prayerData.timings));
+        const tz = prayerData.meta?.timezone || getCityTimezone(selectedCity);
+        setNextPrayerInfo(getNextPrayer(prayerData.timings, tz));
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [prayerData]);
+  }, [prayerData, selectedCity]);
 
   const handleCityChange = async (city: string) => {
     setSelectedCity(city);
@@ -44,6 +68,8 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
     try {
       const data = await getPrayerTimesByCity(city);
       setPrayerData(data);
+      const tz = data.meta?.timezone || getCityTimezone(city);
+      setNextPrayerInfo(getNextPrayer(data.timings, tz));
     } catch (e) {
       console.error(e);
     } finally {
@@ -111,7 +137,9 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
             </div>
             <p className="text-xs text-emerald-200/80 mt-2 flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-emerald-300" />
-              <span>Waktu terus berjalan, luangkan waktu untuk bersiap mengambil wudhu.</span>
+              <span>
+                Zona waktu: {prayerData.meta.timezone || "Asia/Jakarta"} • Kemenag RI
+              </span>
             </p>
           </div>
 
