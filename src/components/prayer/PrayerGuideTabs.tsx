@@ -16,7 +16,10 @@ import {
   Copy, 
   Layers, 
   HelpCircle,
-  Volume2
+  Volume2,
+  ShieldCheck,
+  User,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,11 +47,15 @@ export default function PrayerGuideTabs() {
       {/* Header & Main Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-100">
         <div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full w-fit mb-2">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Tuntunan Berdasarkan Dalil & Hadits Shahih</span>
+          </div>
           <h3 className="text-xl font-bold text-slate-800">
             Panduan Bacaan & Tata Cara Shalat
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
-            Pelajari niat, rukun, gerakan, doa qunut, dan dzikir sesudah shalat
+            Dilengkapi sumber hadits, status hukum rukun, dan keutamaan amalan
           </p>
         </div>
 
@@ -161,9 +168,18 @@ export default function PrayerGuideTabs() {
                   </p>
                 </div>
 
-                <p className="text-[11px] text-slate-400 mt-3 pt-2 border-t border-stone-200/40">
-                  {item.description}
-                </p>
+                {/* Knowledge Card */}
+                <div className="bg-white rounded-2xl p-3 border border-stone-200 mt-3 space-y-1 text-xs">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-semibold text-slate-700">📚 {item.source}</span>
+                    <span className="bg-emerald-50 text-emerald-700 font-bold px-1.5 py-0.2 rounded border border-emerald-200">
+                      {item.grade}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 pt-0.5">
+                    <strong>Keutamaan:</strong> {item.fadhilah}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -183,9 +199,12 @@ export default function PrayerGuideTabs() {
                   className="bg-stone-50 rounded-3xl p-6 border border-stone-200/70 space-y-4"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <h4 className="font-bold text-base text-slate-800 flex items-center gap-2">
-                      <span>{step.title}</span>
-                    </h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-base text-slate-800">{step.title}</h4>
+                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                        {step.grade}
+                      </span>
+                    </div>
 
                     {/* If Iftitah Step, show Version selector */}
                     {isIftitah && (
@@ -224,7 +243,7 @@ export default function PrayerGuideTabs() {
                       <div className="flex items-center justify-between text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 font-semibold">
                         <span>{selectedIftitah.title}</span>
                         <button
-                          onClick={() => handleCopy(`${selectedIftitah.arabic}\n\n${selectedIftitah.latin}\n\n"${selectedIftitah.translation}"\n(${selectedIftitah.source})`, "iftitah-active")}
+                          onClick={() => handleCopy(`${selectedIftitah.arabic}\n\n${selectedIftitah.latin}\n\n"${selectedIftitah.translation}"\n(Sumber: ${selectedIftitah.source} - ${selectedIftitah.narrator})`, "iftitah-active")}
                           className="p-1 text-emerald-700 hover:text-emerald-900 rounded transition-colors"
                         >
                           {copiedId === "iftitah-active" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -243,9 +262,19 @@ export default function PrayerGuideTabs() {
                         <strong>Artinya:</strong> "{selectedIftitah.translation}"
                       </p>
 
-                      <div className="text-[11px] text-slate-500 bg-amber-50/70 border border-amber-200/50 p-3 rounded-2xl space-y-1">
-                        <p><strong>Sumber Dalil:</strong> {selectedIftitah.source}</p>
-                        <p>{selectedIftitah.description}</p>
+                      {/* Knowledge Details */}
+                      <div className="bg-emerald-50/70 border border-emerald-200 p-3.5 rounded-2xl space-y-1.5 text-xs text-emerald-950">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold">📚 Sumber: {selectedIftitah.source}</span>
+                          <span>•</span>
+                          <span>👤 Perawi: {selectedIftitah.narrator}</span>
+                          <span className="bg-emerald-600 text-white px-1.5 py-0.2 rounded text-[10px] font-bold">
+                            {selectedIftitah.grade}
+                          </span>
+                        </div>
+                        <p className="text-emerald-900">
+                          <strong>✨ Keutamaan:</strong> {selectedIftitah.fadhilah}
+                        </p>
                       </div>
                     </div>
                   ) : (
@@ -262,8 +291,17 @@ export default function PrayerGuideTabs() {
                         <strong>Artinya:</strong> "{step.translation}"
                       </p>
 
-                      <div className="text-xs text-slate-500 bg-amber-50/70 border border-amber-200/50 p-3 rounded-2xl">
-                        <strong>Panduan Gerakan:</strong> {step.notes}
+                      {/* Movement Notes & Hadith Source */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div className="text-slate-600 bg-white border border-stone-200 p-3 rounded-2xl">
+                          <strong className="text-slate-800">Panduan Gerakan:</strong> {step.notes}
+                        </div>
+                        <div className="text-emerald-900 bg-emerald-50/70 border border-emerald-200 p-3 rounded-2xl space-y-1">
+                          <strong className="text-emerald-950">📚 Dalil:</strong> {step.source}
+                          <p className="text-[11px] text-emerald-800 pt-0.5">
+                            <strong>Fadhilah:</strong> {step.fadhilah}
+                          </p>
+                        </div>
                       </div>
                     </>
                   )}
@@ -283,7 +321,7 @@ export default function PrayerGuideTabs() {
               <p className="text-xs text-slate-400">{DOA_QUNUT.description}</p>
             </div>
             <button
-              onClick={() => handleCopy(`${DOA_QUNUT.arabic}\n\n${DOA_QUNUT.latin}\n\n"${DOA_QUNUT.translation}"`, "qunut")}
+              onClick={() => handleCopy(`${DOA_QUNUT.arabic}\n\n${DOA_QUNUT.latin}\n\n"${DOA_QUNUT.translation}"\n(Sumber: ${DOA_QUNUT.source})`, "qunut")}
               className="p-2 bg-white rounded-xl text-slate-600 hover:bg-stone-200 border border-stone-200 transition-colors"
               title="Salin Doa Qunut"
             >
@@ -307,6 +345,21 @@ export default function PrayerGuideTabs() {
               "{DOA_QUNUT.translation}"
             </p>
           </div>
+
+          {/* Knowledge Card */}
+          <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-2 text-xs text-emerald-950">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold">📚 Sumber: {DOA_QUNUT.source}</span>
+              <span>•</span>
+              <span>👤 Perawi: {DOA_QUNUT.narrator}</span>
+              <span className="bg-emerald-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                {DOA_QUNUT.grade}
+              </span>
+            </div>
+            <p className="text-emerald-900 leading-relaxed">
+              <strong>✨ Keutamaan:</strong> {DOA_QUNUT.fadhilah}
+            </p>
+          </div>
         </div>
       )}
 
@@ -317,36 +370,51 @@ export default function PrayerGuideTabs() {
             {DZIKIR_AFTER_PRAYER.map((item) => (
               <div
                 key={item.id}
-                className="bg-stone-50 rounded-3xl p-5 border border-stone-200/70 space-y-3"
+                className="bg-stone-50 rounded-3xl p-5 border border-stone-200/70 space-y-3 flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-slate-800">{item.title}</span>
-                    {item.count && (
-                      <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                        {item.count}x
-                      </span>
-                    )}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-slate-800">{item.title}</span>
+                      {item.count && (
+                        <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                          {item.count}x
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleCopy(`${item.arabic}\n\n${item.latin}\n\n"${item.translation}"\n(Sumber: ${item.source})`, item.id)}
+                      className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-stone-200 transition-colors"
+                    >
+                      {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleCopy(`${item.arabic}\n\n${item.latin}\n\n"${item.translation}"`, item.id)}
-                    className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-stone-200 transition-colors"
-                  >
-                    {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                  </button>
+
+                  <p className="font-arabic text-xl text-right text-slate-800 leading-loose">
+                    {item.arabic}
+                  </p>
+
+                  <p className="text-xs text-emerald-700 font-medium italic">
+                    {item.latin}
+                  </p>
+
+                  <p className="text-xs text-slate-600 leading-relaxed pt-2 border-t border-stone-200/50">
+                    "{item.translation}"
+                  </p>
                 </div>
 
-                <p className="font-arabic text-xl text-right text-slate-800 leading-loose">
-                  {item.arabic}
-                </p>
-
-                <p className="text-xs text-emerald-700 font-medium italic">
-                  {item.latin}
-                </p>
-
-                <p className="text-xs text-slate-600 leading-relaxed pt-2 border-t border-stone-200/50">
-                  "{item.translation}"
-                </p>
+                {/* Knowledge Card */}
+                <div className="bg-white rounded-2xl p-3 border border-stone-200 mt-2 space-y-1 text-xs">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-semibold text-slate-700">📚 {item.source}</span>
+                    <span className="bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded text-[10px] font-bold">
+                      {item.grade}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 pt-0.5">
+                    <strong>Keutamaan:</strong> {item.fadhilah}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

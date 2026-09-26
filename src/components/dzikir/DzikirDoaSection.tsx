@@ -15,7 +15,11 @@ import {
   Search, 
   Check, 
   Copy, 
-  CircleDot
+  CircleDot,
+  BookOpen,
+  ShieldCheck,
+  User,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DigitalTasbih from "./DigitalTasbih";
@@ -38,7 +42,8 @@ export default function DzikirDoaSection() {
     return (
       d.title.toLowerCase().includes(q) ||
       d.category.toLowerCase().includes(q) ||
-      d.translation.toLowerCase().includes(q)
+      d.translation.toLowerCase().includes(q) ||
+      d.source.toLowerCase().includes(q)
     );
   });
 
@@ -58,14 +63,14 @@ export default function DzikirDoaSection() {
       <div className="bg-gradient-to-br from-teal-700 via-teal-800 to-emerald-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-xl">
         <div className="relative z-10 max-w-2xl space-y-3">
           <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3.5 py-1 rounded-full text-xs font-semibold text-white border border-white/20">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>Al-Matsurat & Amalan Harian</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+            <span>Shahih & Dilengkapi Sumber Rujukan</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold">
             Dzikir Pagi Petang, Doa Harian & Asmaul Husna
           </h2>
           <p className="text-xs sm:text-sm text-teal-100/90 leading-relaxed">
-            Basahi lisan dengan mengingat Allah SWT setiap saat melalui dzikir pagi, petang, doa harian, dan tasbih digital.
+            Seluruh doa dan dzikir dilengkapi <strong>Kitab Hadits, Sanad Perawi Sahabat, Derajat Hadits, dan Fadhilah</strong> agar ibadah semakin berilmu dan terhindar dari taklid buta.
           </p>
         </div>
       </div>
@@ -124,8 +129,9 @@ export default function DzikirDoaSection() {
                     </span>
                   </div>
                   <button
-                    onClick={() => handleCopy(`${item.arabic}\n\n${item.latin}\n\n"${item.translation}"\n(${item.source})`, item.id)}
+                    onClick={() => handleCopy(`${item.arabic}\n\n${item.latin}\n\n"${item.translation}"\n(Sumber: ${item.source} - ${item.narrator})`, item.id)}
                     className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-stone-100 transition-colors"
+                    title="Salin Teks Lengkap"
                   >
                     {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                   </button>
@@ -143,8 +149,24 @@ export default function DzikirDoaSection() {
                   "{item.translation}"
                 </p>
 
-                <div className="text-[11px] text-slate-400 pt-2 border-t border-stone-100">
-                  Sumber: {item.source}
+                {/* Knowledge Card: Sanad & Fadhilah */}
+                <div className="bg-emerald-50/60 rounded-2xl p-3.5 border border-emerald-200/60 space-y-2 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-emerald-950 font-medium">
+                    <span className="inline-flex items-center gap-1 bg-emerald-100/90 text-emerald-900 px-2.5 py-0.5 rounded-md font-semibold">
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>{item.source}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 bg-white text-slate-700 px-2 py-0.5 rounded-md border border-stone-200">
+                      <User className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{item.narrator}</span>
+                    </span>
+                    <span className="bg-emerald-600 text-white px-2 py-0.5 rounded-md font-bold text-[10px]">
+                      {item.grade}
+                    </span>
+                  </div>
+                  <p className="text-emerald-900/90 leading-relaxed pt-1">
+                    <strong>✨ Keutamaan / Fadhilah:</strong> {item.fadhilah}
+                  </p>
                 </div>
               </div>
             ))}
@@ -178,7 +200,7 @@ export default function DzikirDoaSection() {
                     </span>
                   </div>
                   <button
-                    onClick={() => handleCopy(`${item.arabic}\n\n${item.latin}\n\n"${item.translation}"\n(${item.source})`, item.id)}
+                    onClick={() => handleCopy(`${item.arabic}\n\n${item.latin}\n\n"${item.translation}"\n(Sumber: ${item.source} - ${item.narrator})`, item.id)}
                     className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-stone-100 transition-colors"
                   >
                     {copiedId === item.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
@@ -197,8 +219,24 @@ export default function DzikirDoaSection() {
                   "{item.translation}"
                 </p>
 
-                <div className="text-[11px] text-slate-400 pt-2 border-t border-stone-100">
-                  Sumber: {item.source}
+                {/* Knowledge Card */}
+                <div className="bg-amber-50/60 rounded-2xl p-3.5 border border-amber-200/60 space-y-2 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-amber-950 font-medium">
+                    <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-md font-semibold">
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>{item.source}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 bg-white text-slate-700 px-2 py-0.5 rounded-md border border-stone-200">
+                      <User className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{item.narrator}</span>
+                    </span>
+                    <span className="bg-amber-600 text-white px-2 py-0.5 rounded-md font-bold text-[10px]">
+                      {item.grade}
+                    </span>
+                  </div>
+                  <p className="text-amber-950/90 leading-relaxed pt-1">
+                    <strong>✨ Keutamaan / Fadhilah:</strong> {item.fadhilah}
+                  </p>
                 </div>
               </div>
             ))}
@@ -214,7 +252,7 @@ export default function DzikirDoaSection() {
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Cari doa (e.g. bangun tidur, makan, keluar rumah, orang tua, rezeki)..."
+                placeholder="Cari doa & sumber (e.g. bangun tidur, makan, keluar rumah, orang tua, Bukhari)..."
                 value={searchDoa}
                 onChange={(e) => setSearchDoa(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-2xl text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 text-slate-800"
@@ -237,7 +275,7 @@ export default function DzikirDoaSection() {
                       </span>
                     </div>
                     <button
-                      onClick={() => handleCopy(`${doa.arabic}\n\n${doa.latin}\n\n"${doa.translation}"\n(${doa.source})`, doa.id)}
+                      onClick={() => handleCopy(`${doa.arabic}\n\n${doa.latin}\n\n"${doa.translation}"\n(Sumber: ${doa.source} - ${doa.narrator})`, doa.id)}
                       className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-stone-100 transition-colors"
                     >
                       {copiedId === doa.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
@@ -257,8 +295,19 @@ export default function DzikirDoaSection() {
                   </p>
                 </div>
 
-                <div className="text-[10px] text-slate-400 pt-2 border-t border-stone-100 mt-2">
-                  Sumber: {doa.source}
+                {/* Knowledge Card */}
+                <div className="bg-stone-50 rounded-2xl p-3 border border-stone-200 space-y-1 text-xs mt-2">
+                  <div className="flex flex-wrap items-center gap-1.5 font-medium">
+                    <span className="bg-stone-200/80 text-slate-800 px-2 py-0.5 rounded text-[11px] font-semibold">
+                      📚 {doa.source}
+                    </span>
+                    <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">
+                      {doa.grade}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 pt-1">
+                    <strong>Perawi:</strong> {doa.narrator} • <em>{doa.fadhilah}</em>
+                  </p>
                 </div>
               </div>
             ))}
