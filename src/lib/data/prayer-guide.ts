@@ -9,6 +9,16 @@ export interface PrayerNiat {
   description: string;
 }
 
+export interface IftitahVersion {
+  id: string;
+  title: string;
+  source: string;
+  arabic: string;
+  latin: string;
+  translation: string;
+  description: string;
+}
+
 export interface PrayerStep {
   step: number;
   title: string;
@@ -16,6 +26,7 @@ export interface PrayerStep {
   latin: string;
   translation: string;
   notes: string;
+  iftitahVersions?: IftitahVersion[];
 }
 
 export interface PrayerDzikirItem {
@@ -26,6 +37,36 @@ export interface PrayerDzikirItem {
   translation: string;
   count?: number;
 }
+
+export const IFTITAH_VERSIONS: IftitahVersion[] = [
+  {
+    id: "allahumma-baid",
+    title: "Versi 1: Allahumma Ba'id Baini (Riwayat Bukhari & Muslim)",
+    source: "HR. Bukhari No. 744 & Muslim No. 598 (dari Abu Hurairah RA)",
+    arabic: "اللَّهُمَّ بَاعِدْ بَيْنِي وَبَيْنَ خَطَايَايَ كَمَا بَاعَدْتَ بَيْنَ الْمَشْرِقِ وَالْمَغْرِبِ، اللَّهُمَّ نَقِّنِي مِنْ خَطَايَايَ كَمَا يُنَقَّى الثَّوْبُ الأَبْيَضُ مِنَ الدَّنَسِ، اللَّهُمَّ اغْسِلْنِي مِنْ خَطَايَايَ بِالثَّلْجِ وَالْمَاءِ وَالْبَرَدِ",
+    latin: "Allaahumma baa'id bainii wa baina khathaayaaya kamaa baa'adta bainal masyriqi wal maghrib. Allaahumma naqqinii min khathaayaaya kamaa yunaqqats-tsaubul abyadhu minad-danas. Allaahummaghsilnii min khathaayaaya bits-tsalji wal maa-i wal barad.",
+    translation: "Ya Allah, jauhkanlah antara aku dan kesalahan-kesalahanku sebagaimana Engkau menjauhkan antara timur dan barat. Ya Allah, bersihkanlah aku dari kesalahan-kesalahanku sebagaimana baju putih dibersihkan dari kotoran. Ya Allah, cucilah aku dari kesalahan-kesalahanku dengan salju, air, dan embun/es.",
+    description: "Doa iftitah yang sangat sering dibaca Rasulullah ﷺ dalam shalat fardhu menurut penuturan sahabat Abu Hurairah RA (Populer digunakan di kalangan Muhammadiyah & Madzhab Hanbali).",
+  },
+  {
+    id: "wajjahtu",
+    title: "Versi 2: Allahu Akbar Kabira & Wajjahtu (Riwayat Muslim & Abu Dawud)",
+    source: "HR. Muslim No. 771 & Abu Dawud No. 760 (dari Ali bin Abi Thalib RA)",
+    arabic: "اللهُ أَكْبَرُ كَبِيرًا وَالْحَمْدُ لِلَّهِ كَثِيرًا وَسُبْحَانَ اللَّهِ بُكْرَةً وَأَصِيلاً. وَجَّهْتُ وَجْهِيَ لِلَّذِي فَطَرَ السَّمَاوَاتِ وَالأَرْضَ حَنِيفًا مُسْلِمًا وَمَا أَنَا مِنَ الْمُشْرِكِينَ. إِنَّ صَلاَتِي وَنُسُكِي وَمَحْيَايَ وَمَمَاتِي لِلَّهِ رَبِّ الْعَالَمِينَ لاَ شَرِيكَ لَهُ وَبِذَلِكَ أُمِرْتُ وَأَنَا مِنَ الْمُسْلِمِينَ",
+    latin: "Allaahu akbaru kabiiraa walhamdu lillaahi katsiiraa, wa subhaanallaahi bukrataw wa-ashiilaa. Wajjahtu wajhiya lilladzii fatharas-samaawaati wal ardha haniifam muslimaw wamaa ana minal musyrikiin. Inna shalaatii wa nusukii wa mahyaaya wa mamaatii lillaahi rabbil 'aalamiin. Laa syariika lahu wa bidzaalika umirtu wa ana minal muslimiin.",
+    translation: "Allah Maha Besar lagi sempurna kebesaran-Nya, segala puji bagi Allah dengan pujian yang banyak. Maha Suci Allah sepanjang pagi dan petang. Aku hadapkan wajahku kepada Dzat yang menciptakan langit dan bumi dengan lurus dan berserah diri, dan aku bukanlah termasuk orang musyrik. Sesungguhnya shalatku, ibadahku, hidupku dan matiku hanyalah untuk Allah Tuhan semesta alam, tidak ada sekutu bagi-Nya dan dengan itulah aku diperintahkan dan aku termasuk orang muslim.",
+    description: "Doa iftitah yang umum dan populer dibaca di kalangan umat Islam Nusantara & Madzhab Syafi'i.",
+  },
+  {
+    id: "subhanakallahumma",
+    title: "Versi 3: Subhanakallahumma Wa Bihamdika (Riwayat Abu Dawud & Tirmidzi)",
+    source: "HR. Abu Dawud No. 775 & At-Tirmidzi No. 242 (dari Aisyah RA & Umar bin Khattab RA)",
+    arabic: "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ، وَتَبَارَكَ اسْمُكَ، وَتَعَالَى جَدُّكَ، وَلاَ إِلَهَ غَيْرُكَ",
+    latin: "Subhaanakallaahumma wa bihamdika, wa tabaarakasmuka, wa ta'aalaa jadduka, wa laa ilaaha ghairuk.",
+    translation: "Maha Suci Engkau ya Allah, dan dengan memuji-Mu. Maha Berkah nama-Mu, Maha Tinggi keagungan-Mu, dan tiada sesembahan yang berhak disembah selain Engkau.",
+    description: "Doa iftitah yang ringkas dan padat, sering dibaca oleh Khalifah Umar bin Khattab RA di hadapan para sahabat.",
+  },
+];
 
 export const PRAYER_NIAT_LIST: PrayerNiat[] = [
   {
@@ -152,10 +193,11 @@ export const PRAYER_STEPS: PrayerStep[] = [
   {
     step: 2,
     title: "2. Membaca Doa Iftitah (Sunnah)",
-    arabic: "اللهُ أَكْبَرُ كَبِيرًا وَالْحَمْدُ لِلَّهِ كَثِيرًا وَسُبْحَانَ اللَّهِ بُكْرَةً وَأَصِيلاً. إِنِّي وَجَّهْتُ وَجْهِيَ لِلَّذِي فَطَرَ السَّمَاوَاتِ وَالأَرْضَ حَنِيفًا مُسْلِمًا وَمَا أَنَا مِنَ الْمُشْرِكِينَ. إِنَّ صَلاَتِي وَنُسُكِي وَمَحْيَايَ وَمَمَاتِي لِلَّهِ رَبِّ الْعَالَمِينَ لاَ شَرِيكَ لَهُ وَبِذَلِكَ أُمِرْتُ وَأَنَا مِنَ الْمُسْلِمِينَ.",
-    latin: "Allaahu akbaru kabiiraa walhamdu lillaahi katsiiraa, wa subhaanallaahi bukrataw wa-ashiilaa. Innii wajjahtu wajhiya lilladzii fatharas-samaawaati wal ardha haniifam muslimaw wamaa ana minal musyrikiin. Inna shalaatii wa nusukii wa mahyaaya wa mamaatii lillaahi rabbil 'aalamiin. Laa syariika lahu wa bidzaalika umirtu wa ana minal muslimiin.",
-    translation: "Allah Maha Besar lagi sempurna kebesaran-Nya, segala puji bagi Allah dengan pujian yang banyak. Maha Suci Allah sepanjang pagi dan petang. Sesungguhnya aku hadapkan wajahku kepada Dzat yang menciptakan langit dan bumi dengan lurus dan berserah diri, dan aku bukanlah termasuk orang musyrik. Sesungguhnya shalatku, ibadahku, hidupku dan matiku hanyalah untuk Allah Tuhan semesta alam, tidak ada sekutu bagi-Nya dan dengan itulah aku diperintahkan dan aku termasuk orang muslim.",
-    notes: "Dibaca setelah takbiratul ihram pada rakaat pertama secara pelan (sirr).",
+    arabic: IFTITAH_VERSIONS[0].arabic,
+    latin: IFTITAH_VERSIONS[0].latin,
+    translation: IFTITAH_VERSIONS[0].translation,
+    notes: "Dibaca setelah takbiratul ihram pada rakaat pertama secara pelan (sirr). Terdapat beberapa riwayat shahih yang bisa dipilih.",
+    iftitahVersions: IFTITAH_VERSIONS,
   },
   {
     step: 3,

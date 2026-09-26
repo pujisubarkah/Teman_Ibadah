@@ -5,7 +5,8 @@ import {
   PRAYER_NIAT_LIST, 
   PRAYER_STEPS, 
   DOA_QUNUT, 
-  DZIKIR_AFTER_PRAYER 
+  DZIKIR_AFTER_PRAYER,
+  IFTITAH_VERSIONS 
 } from "@/lib/data/prayer-guide";
 import { 
   BookOpen, 
@@ -22,6 +23,7 @@ import { cn } from "@/lib/utils";
 export default function PrayerGuideTabs() {
   const [activeTab, setActiveTab] = useState<"niat" | "tata-cara" | "qunut" | "dzikir">("niat");
   const [niatFilter, setNiatFilter] = useState<"all" | "fardhu" | "sunnah">("all");
+  const [selectedIftitahId, setSelectedIftitahId] = useState<string>("allahumma-baid");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = (text: string, id: string) => {
@@ -34,6 +36,8 @@ export default function PrayerGuideTabs() {
     if (niatFilter === "all") return true;
     return item.category === niatFilter;
   });
+
+  const selectedIftitah = IFTITAH_VERSIONS.find((v) => v.id === selectedIftitahId) || IFTITAH_VERSIONS[0];
 
   return (
     <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-xs space-y-6">
@@ -170,41 +174,102 @@ export default function PrayerGuideTabs() {
       {activeTab === "tata-cara" && (
         <div className="space-y-6">
           <div className="space-y-4">
-            {PRAYER_STEPS.map((step) => (
-              <div
-                key={step.step}
-                className="bg-stone-50 rounded-3xl p-6 border border-stone-200/70 space-y-4"
-              >
-                <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-base text-slate-800 flex items-center gap-2">
-                    <span>{step.title}</span>
-                  </h4>
-                  <button
-                    onClick={() => handleCopy(`${step.arabic}\n\n${step.latin}\n\n"${step.translation}"`, `step-${step.step}`)}
-                    className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-stone-200 transition-colors"
-                    title="Salin Bacaan"
-                  >
-                    {copiedId === `step-${step.step}` ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                  </button>
+            {PRAYER_STEPS.map((step) => {
+              const isIftitah = step.step === 2;
+
+              return (
+                <div
+                  key={step.step}
+                  className="bg-stone-50 rounded-3xl p-6 border border-stone-200/70 space-y-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h4 className="font-bold text-base text-slate-800 flex items-center gap-2">
+                      <span>{step.title}</span>
+                    </h4>
+
+                    {/* If Iftitah Step, show Version selector */}
+                    {isIftitah && (
+                      <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+                        {IFTITAH_VERSIONS.map((v, idx) => (
+                          <button
+                            key={v.id}
+                            onClick={() => setSelectedIftitahId(v.id)}
+                            className={cn(
+                              "px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer",
+                              selectedIftitahId === v.id
+                                ? "bg-emerald-600 text-white shadow-xs"
+                                : "bg-white text-slate-600 hover:bg-stone-200 border border-stone-200"
+                            )}
+                          >
+                            Versi {idx + 1}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {!isIftitah && (
+                      <button
+                        onClick={() => handleCopy(`${step.arabic}\n\n${step.latin}\n\n"${step.translation}"`, `step-${step.step}`)}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-stone-200 transition-colors self-end sm:self-auto"
+                        title="Salin Bacaan"
+                      >
+                        {copiedId === `step-${step.step}` ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Render content: If Iftitah, render active version */}
+                  {isIftitah ? (
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-center justify-between text-xs text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 font-semibold">
+                        <span>{selectedIftitah.title}</span>
+                        <button
+                          onClick={() => handleCopy(`${selectedIftitah.arabic}\n\n${selectedIftitah.latin}\n\n"${selectedIftitah.translation}"\n(${selectedIftitah.source})`, "iftitah-active")}
+                          className="p-1 text-emerald-700 hover:text-emerald-900 rounded transition-colors"
+                        >
+                          {copiedId === "iftitah-active" ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+
+                      <p className="font-arabic text-xl sm:text-2xl text-right text-slate-800 leading-loose">
+                        {selectedIftitah.arabic}
+                      </p>
+
+                      <p className="text-xs sm:text-sm text-emerald-700 font-medium italic">
+                        {selectedIftitah.latin}
+                      </p>
+
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-white p-3.5 rounded-2xl border border-stone-200/50">
+                        <strong>Artinya:</strong> "{selectedIftitah.translation}"
+                      </p>
+
+                      <div className="text-[11px] text-slate-500 bg-amber-50/70 border border-amber-200/50 p-3 rounded-2xl space-y-1">
+                        <p><strong>Sumber Dalil:</strong> {selectedIftitah.source}</p>
+                        <p>{selectedIftitah.description}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="font-arabic text-xl sm:text-2xl text-right text-slate-800 leading-loose">
+                        {step.arabic}
+                      </p>
+
+                      <p className="text-xs sm:text-sm text-emerald-700 font-medium italic">
+                        {step.latin}
+                      </p>
+
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-white p-3.5 rounded-2xl border border-stone-200/50">
+                        <strong>Artinya:</strong> "{step.translation}"
+                      </p>
+
+                      <div className="text-xs text-slate-500 bg-amber-50/70 border border-amber-200/50 p-3 rounded-2xl">
+                        <strong>Panduan Gerakan:</strong> {step.notes}
+                      </div>
+                    </>
+                  )}
                 </div>
-
-                <p className="font-arabic text-xl sm:text-2xl text-right text-slate-800 leading-loose">
-                  {step.arabic}
-                </p>
-
-                <p className="text-xs sm:text-sm text-emerald-700 font-medium italic">
-                  {step.latin}
-                </p>
-
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-white p-3.5 rounded-2xl border border-stone-200/50">
-                  <strong>Artinya:</strong> "{step.translation}"
-                </p>
-
-                <div className="text-xs text-slate-500 bg-amber-50/70 border border-amber-200/50 p-3 rounded-2xl">
-                  <strong>Panduan Gerakan:</strong> {step.notes}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
