@@ -11,7 +11,8 @@ import {
   Sparkles, 
   ChevronRight,
   Flame,
-  CheckCircle2
+  CheckCircle2,
+  Calendar
 } from "lucide-react";
 import { PrayerData } from "@/lib/types";
 import { 
@@ -30,12 +31,42 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
   const [prayerData, setPrayerData] = useState<PrayerData>(initialPrayerData);
   const [selectedCity, setSelectedCity] = useState("Jakarta");
   const [loadingCity, setLoadingCity] = useState(false);
+  const [currentTimeStr, setCurrentTimeStr] = useState<string>("");
   const [nextPrayerInfo, setNextPrayerInfo] = useState(() =>
     getNextPrayer(initialPrayerData.timings, initialPrayerData.meta.timezone || "Asia/Jakarta")
   );
   const { lastRead, streak, khatam } = useQuranStore();
 
-  // Client-side refresh on mount to sync browser time with selected city
+  // Update current live digital clock & next prayer countdown every second
+  useEffect(() => {
+    const updateClock = () => {
+      const tz = prayerData.meta?.timezone || getCityTimezone(selectedCity);
+      try {
+        const now = new Date();
+        const formatter = new Intl.DateTimeFormat("id-ID", {
+          timeZone: tz,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        });
+        setCurrentTimeStr(formatter.format(now));
+      } catch {
+        const now = new Date();
+        setCurrentTimeStr(now.toTimeString().split(" ")[0]);
+      }
+
+      if (prayerData?.timings) {
+        setNextPrayerInfo(getNextPrayer(prayerData.timings, tz));
+      }
+    };
+
+    updateClock();
+    const timer = setInterval(updateClock, 1000);
+    return () => clearInterval(timer);
+  }, [prayerData, selectedCity]);
+
+  // Client-side refresh on mount
   useEffect(() => {
     let isMounted = true;
     const tz = getCityTimezone(selectedCity);
@@ -50,17 +81,6 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
       isMounted = false;
     };
   }, [selectedCity]);
-
-  // Real-time ticking countdown timer (every second)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (prayerData?.timings) {
-        const tz = prayerData.meta?.timezone || getCityTimezone(selectedCity);
-        setNextPrayerInfo(getNextPrayer(prayerData.timings, tz));
-      }
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [prayerData, selectedCity]);
 
   const handleCityChange = async (city: string) => {
     setSelectedCity(city);
@@ -80,6 +100,8 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
   const completedSurahCount = khatam?.completedSurahs?.length || 0;
   const khatamPercent = Math.round((completedSurahCount / 114) * 100);
 
+  const [hoursLeft, minsLeft, secsLeft] = nextPrayerInfo.timeRemaining.split(":");
+
   return (
     <div className="space-y-6">
       {/* Top Banner Grid */}
@@ -92,59 +114,86 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
           />
           <div className="absolute -right-16 -bottom-16 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Header info */}
-          <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 mb-6">
-            <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-medium text-emerald-100 border border-white/10">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>
-                {prayerData.date.hijri.day} {prayerData.date.hijri.month.en} {prayerData.date.hijri.year} H
-              </span>
+          {/* Header row: Live Clock, Hijri Date, City Selector */}
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-2.5 mb-5">
+            {/* Live Clock Badge */}
+            <div className="flex items-center gap-2 bg-black/25 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-semibold text-white border border-white/15">
+              <Clock className="w-3.5 h-3.5 text-emerald-300 animate-pulse" />
+              <span>Jam Sekarang: <strong className="font-mono text-amber-300 text-sm">{currentTimeStr || "--:--:--"}</strong></span>
             </div>
 
-            {/* City Selector */}
-            <div className="flex items-center gap-1.5 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs text-white border border-white/10">
-              <MapPin className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <select
-                value={selectedCity}
-                onChange={(e) => handleCityChange(e.target.value)}
-                disabled={loadingCity}
-                className="bg-transparent border-none text-white text-xs font-medium focus:outline-hidden cursor-pointer pr-1"
-              >
-                {INDONESIAN_CITIES.map((c) => (
-                  <option key={c.name} value={c.name} className="text-slate-900">
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2">
+              {/* Hijri Date */}
+              <div className="hidden sm:flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium text-emerald-100 border border-white/10">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>
+                  {prayerData.date.hijri.day} {prayerData.date.hijri.month.en} {prayerData.date.hijri.year} H
+                </span>
+              </div>
+
+              {/* City Selector */}
+              <div className="flex items-center gap-1 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full text-xs text-white border border-white/10">
+                <MapPin className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                <select
+                  value={selectedCity}
+                  onChange={(e) => handleCityChange(e.target.value)}
+                  disabled={loadingCity}
+                  className="bg-transparent border-none text-white text-xs font-medium focus:outline-hidden cursor-pointer pr-1"
+                >
+                  {INDONESIAN_CITIES.map((c) => (
+                    <option key={c.name} value={c.name} className="text-slate-900">
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
-          {/* Next Prayer Countdown Hero */}
-          <div className="relative z-10 my-auto py-2">
-            <div className="flex items-baseline gap-2">
-              <span className="text-xs uppercase font-bold tracking-widest text-emerald-200">
-                Menuju Waktu Shalat
+          {/* Next Prayer Countdown Hero Section */}
+          <div className="relative z-10 my-auto py-2 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] uppercase font-bold tracking-widest text-emerald-200">
+                Hitung Mundur Shalat Berikutnya:
               </span>
-              <span className="text-xs bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full font-semibold border border-amber-400/30">
-                {nextPrayerInfo.name} • {nextPrayerInfo.time}
+              <span className="text-xs bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full font-bold shadow-xs">
+                {nextPrayerInfo.name} {nextPrayerInfo.isToday ? "Hari Ini" : "Besok"} • {nextPrayerInfo.time}
               </span>
             </div>
 
-            <div className="mt-2 flex items-baseline gap-4">
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight font-mono text-white drop-shadow-xs">
-                {nextPrayerInfo.timeRemaining}
-              </h2>
+            {/* Big Countdown Timer Display */}
+            <div className="pt-1">
+              <div className="flex items-baseline gap-2 sm:gap-3">
+                <div className="flex flex-col items-center">
+                  <span className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-mono text-white tracking-tight drop-shadow-xs">
+                    {hoursLeft || "00"}
+                  </span>
+                  <span className="text-[10px] uppercase font-semibold text-emerald-200 mt-0.5">Jam</span>
+                </div>
+                <span className="text-3xl sm:text-4xl font-extrabold text-amber-300 font-mono -translate-y-2">:</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-mono text-white tracking-tight drop-shadow-xs">
+                    {minsLeft || "00"}
+                  </span>
+                  <span className="text-[10px] uppercase font-semibold text-emerald-200 mt-0.5">Menit</span>
+                </div>
+                <span className="text-3xl sm:text-4xl font-extrabold text-amber-300 font-mono -translate-y-2">:</span>
+                <div className="flex flex-col items-center">
+                  <span className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-mono text-white tracking-tight drop-shadow-xs">
+                    {secsLeft || "00"}
+                  </span>
+                  <span className="text-[10px] uppercase font-semibold text-emerald-200 mt-0.5">Detik</span>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-emerald-200/80 mt-2 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-emerald-300" />
-              <span>
-                Zona waktu: {prayerData.meta.timezone || "Asia/Jakarta"} • Kemenag RI
-              </span>
+
+            <p className="text-xs text-emerald-200/90 pt-1 flex items-center gap-1.5">
+              <span>⏳ Sisa waktu <strong>{hoursLeft} jam {minsLeft} menit lagi</strong> menuju kumandang adzan {nextPrayerInfo.name}.</span>
             </p>
           </div>
 
           {/* Fast Prayer Times Bar */}
-          <div className="relative z-10 pt-6 mt-4 border-t border-white/15 grid grid-cols-5 gap-2 text-center">
+          <div className="relative z-10 pt-5 mt-3 border-t border-white/15 grid grid-cols-5 gap-2 text-center">
             {[
               { name: "Subuh", time: prayerData.timings.Fajr },
               { name: "Dzuhur", time: prayerData.timings.Dhuhr },
