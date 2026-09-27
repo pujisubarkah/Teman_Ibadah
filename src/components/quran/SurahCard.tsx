@@ -12,8 +12,14 @@ interface SurahCardProps {
 }
 
 export default function SurahCard({ surah }: SurahCardProps) {
+  const [mounted, setMounted] = React.useState(false);
   const { khatam, toggleSurahCompleted } = useQuranStore();
-  const isCompleted = khatam?.completedSurahs?.includes(surah.number) || false;
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isCompleted = mounted && (khatam?.completedSurahs?.includes(surah.number) || false);
 
   return (
     <div className="group bg-white rounded-3xl p-5 border border-stone-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all duration-200 flex flex-col justify-between relative overflow-hidden">

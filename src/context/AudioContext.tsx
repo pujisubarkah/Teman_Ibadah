@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useRef, useEffect, ReactNode } from "react";
 import { Ayah, Surah } from "@/lib/types";
+import { buildAyahAudioUrl, DEFAULT_RECITER_ID } from "@/lib/data/reciters";
+import { useQuranStore } from "@/lib/store/useQuranStore";
 
 interface AudioContextType {
   isPlaying: boolean;
@@ -13,7 +15,8 @@ interface AudioContextType {
   currentTime: number;
   playbackRate: number;
   autoPlayNext: boolean;
-  playAyah: (ayah: Ayah, surah: Surah, fullAyahs?: Ayah[], startIndex?: number) => void;
+  activeReciter: string;
+  playAyah: (ayah: Ayah, surah: Surah, fullAyahs?: Ayah[], startIndex?: number, reciterId?: string) => void;
   togglePlay: () => void;
   pause: () => void;
   playNext: () => void;
@@ -27,6 +30,7 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export function AudioProvider({ children }: { children: ReactNode }) {
+  const { selectedReciter } = useQuranStore();
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentSurah, setCurrentSurah] = useState<Surah | null>(null);
   const [currentAyah, setCurrentAyah] = useState<Ayah | null>(null);
@@ -81,13 +85,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     };
   }, [autoPlayNext]);
 
-  // Handle playing next ayah when currentAyahIndex changes
+  // Handle playing next ayah when currentAyahIndex or selectedReciter changes
   useEffect(() => {
     if (currentAyahIndex >= 0 && playlist.length > 0 && currentAyahIndex < playlist.length) {
       const nextAyah = playlist[currentAyahIndex];
       setCurrentAyah(nextAyah);
-      if (audioRef.current && nextAyah.audio) {
-        audioRef.current.src = nextAyah.audio;
+      if (audioRef.current) {
+        const audioUrl = buildAyahAudioUrl(nextAyah.number, selectedReciter || DEFAULT_RECITER_ID);
+        audioRef.current.src = audioUrl;
         audioRef.current.playbackRate = playbackRate;
         audioRef.current
           .play()
@@ -98,7 +103,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       // Reached end of surah
       setIsPlaying(false);
     }
-  }, [currentAyahIndex, playlist, playbackRate]);
+  }, [currentAyahIndex, playlist, playbackRate, selectedReciter]);
 
   const playAyah = (
     ayah: Ayah,
@@ -198,6 +203,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         currentTime,
         playbackRate,
         autoPlayNext,
+        activeReciter: selectedReciter || DEFAULT_RECITER_ID,
         playAyah,
         togglePlay,
         pause,

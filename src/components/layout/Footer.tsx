@@ -87,7 +87,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="pt-6 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} QuranTrack — Dibuat untuk memudahkan ibadah setiap hari.</p>
+          <p suppressHydrationWarning>© {new Date().getFullYear()} QuranTrack — Dibuat untuk memudahkan ibadah setiap hari.</p>
           <p className="flex items-center gap-1 text-slate-400">
             <span>Didesain dengan</span>
             <Heart className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500 inline" />

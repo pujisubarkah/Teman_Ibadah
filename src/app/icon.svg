@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <defs>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FBBF24" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background rounded squircle -->
+  <rect width="32" height="32" rx="7" fill="url(#emeraldGrad)" />
+  
+  <!-- Subtle inner border -->
+  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="6.25" stroke="white" stroke-opacity="0.2" stroke-width="1.5" />
+  
+  <!-- Open Quran Book Icon -->
+  <g stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left page curve -->
+    <path d="M7 8.5C9.5 8 13.5 8 16 9.5V23.5C13.5 22 9.5 22 7 22.5V8.5Z" fill="white" fill-opacity="0.15" />
+    <!-- Right page curve -->
+    <path d="M25 8.5C22.5 8 18.5 8 16 9.5V23.5C18.5 22 22.5 22 25 22.5V8.5Z" fill="white" fill-opacity="0.15" />
+    <!-- Center spine line -->
+    <path d="M16 9.5V23.5" />
+  </g>
+
+  <!-- Golden bookmark / Star Accent -->
+  <path d="M16 7.5L16.8 9.5L19 9.8L17.4 11.2L17.8 13.4L16 12.3L14.2 13.4L14.6 11.2L13 9.8L15.2 9.5L16 7.5Z" fill="url(#goldGrad)" />
+</svg>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Ayah, Surah } from "@/lib/types";
 import { 
   Play, 
@@ -16,6 +16,7 @@ import {
 import { useAudio } from "@/context/AudioContext";
 import { useQuranStore } from "@/lib/store/useQuranStore";
 import { cn, formatNumberArabic } from "@/lib/utils";
+import { parseTajweedToHtml } from "@/lib/utils/tajweed";
 
 interface AyahCardProps {
   ayah: Ayah;
@@ -39,16 +40,22 @@ export default function AyahCard({
     isAyahBookmarked, 
     toggleBookmark, 
     saveLastRead, 
-    lastRead 
+    lastRead,
+    isTajweedEnabled
   } = useQuranStore();
 
+  const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
   const [markedReadToast, setMarkedReadToast] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isCurrentPlaying = currentAyah?.number === ayah.number && isPlaying;
   const isSelectedForAudio = currentAyah?.number === ayah.number;
-  const isBookmarked = isAyahBookmarked(surah.number, ayah.numberInSurah);
-  const isLastRead = lastRead?.surahNumber === surah.number && lastRead?.ayahNumber === ayah.numberInSurah;
+  const isBookmarked = mounted && isAyahBookmarked(surah.number, ayah.numberInSurah);
+  const isLastRead = mounted && (lastRead?.surahNumber === surah.number && lastRead?.ayahNumber === ayah.numberInSurah);
 
   const handlePlay = () => {
     if (isSelectedForAudio) {
@@ -188,16 +195,33 @@ export default function AyahCard({
 
       {/* Arabic Ayah Text */}
       <div className="my-6">
-        <p
-          dir="rtl"
-          className="font-arabic text-right text-slate-800 leading-loose tracking-wide select-text"
-          style={{ fontSize: `${fontSize}px`, lineHeight: `${Math.round(fontSize * 2.2)}px` }}
-        >
-          {ayah.text}{" "}
-          <span className="inline-flex items-center justify-center font-sans text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-sm border border-emerald-200/80 align-middle mr-2">
-            {formatNumberArabic(ayah.numberInSurah)}
-          </span>
-        </p>
+        {mounted && isTajweedEnabled && ayah.tajweedText ? (
+          <p
+            dir="rtl"
+            className="font-arabic text-right text-slate-800 leading-loose tracking-wide select-text"
+            style={{ fontSize: `${fontSize}px`, lineHeight: `${Math.round(fontSize * 2.2)}px` }}
+          >
+            <span
+              dangerouslySetInnerHTML={{
+                __html: parseTajweedToHtml(ayah.tajweedText),
+              }}
+            />{" "}
+            <span className="inline-flex items-center justify-center font-sans text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-sm border border-emerald-200/80 align-middle mr-2 select-none">
+              {formatNumberArabic(ayah.numberInSurah)}
+            </span>
+          </p>
+        ) : (
+          <p
+            dir="rtl"
+            className="font-arabic text-right text-slate-800 leading-loose tracking-wide select-text"
+            style={{ fontSize: `${fontSize}px`, lineHeight: `${Math.round(fontSize * 2.2)}px` }}
+          >
+            {ayah.text}{" "}
+            <span className="inline-flex items-center justify-center font-sans text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-sm border border-emerald-200/80 align-middle mr-2 select-none">
+              {formatNumberArabic(ayah.numberInSurah)}
+            </span>
+          </p>
+        )}
       </div>
 
       {/* Indonesian Translation */}

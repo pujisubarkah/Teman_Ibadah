@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import { 
@@ -18,16 +18,25 @@ import { useQuranStore } from "@/lib/store/useQuranStore";
 import { Surah } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+import KhatamOnTrackCard from "@/components/khatam/KhatamOnTrackCard";
+import DailyPrayerMicroChecklist from "@/components/khatam/DailyPrayerMicroChecklist";
+
 interface KhatamTrackerProps {
   surahs: Surah[];
 }
 
 export default function KhatamTracker({ surahs }: KhatamTrackerProps) {
+  const [mounted, setMounted] = useState(false);
   const { khatam, toggleSurahCompleted, updateKhatamTarget } = useQuranStore();
-  const [selectedDays, setSelectedDays] = useState(khatam.targetDays || 30);
+  const [selectedDays, setSelectedDays] = useState(30);
   const [filterMode, setFilterMode] = useState<"all" | "completed" | "uncompleted">("all");
 
-  const completedCount = khatam.completedSurahs.length;
+  useEffect(() => {
+    setMounted(true);
+    if (khatam.targetDays) setSelectedDays(khatam.targetDays);
+  }, [khatam.targetDays]);
+
+  const completedCount = mounted ? khatam.completedSurahs.length : 0;
   const percentage = Math.round((completedCount / 114) * 100);
 
   const handleCelebrate = () => {
@@ -62,9 +71,9 @@ export default function KhatamTracker({ surahs }: KhatamTrackerProps) {
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               <span>Target & Tracker Khatam Al-Quran</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
               Raih Khatam dengan Istiqamah
-            </h2>
+            </h1>
             <p className="text-xs sm:text-sm text-emerald-100/80 max-w-lg">
               Pantau progres membaca 114 Surah Al-Quran. Tandai surah yang telah selesai dibaca dan rayakan setiap pencapaian.
             </p>
@@ -111,6 +120,12 @@ export default function KhatamTracker({ surahs }: KhatamTrackerProps) {
           </div>
         </div>
       </div>
+
+      {/* Smart Khatam On-Track Assistant & Recovery Widget */}
+      <KhatamOnTrackCard allSurahs={surahs} />
+
+      {/* 5 Daily Prayer Micro-Target Breakdown */}
+      <DailyPrayerMicroChecklist />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

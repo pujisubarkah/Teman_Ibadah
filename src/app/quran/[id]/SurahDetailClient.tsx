@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Surah, Ayah } from "@/lib/types";
 import AyahCard from "@/components/quran/AyahCard";
+import TajweedLegendModal from "@/components/quran/TajweedLegendModal";
+import ReciterSelectorModal from "@/components/audio/ReciterSelectorModal";
 import { 
   Play, 
   Pause, 
@@ -15,11 +17,14 @@ import {
   Eye, 
   EyeOff,
   ArrowLeft,
-  Share2,
-  BookOpen
+  Palette,
+  Mic2,
+  HelpCircle,
+  Volume2
 } from "lucide-react";
 import { useAudio } from "@/context/AudioContext";
 import { useQuranStore } from "@/lib/store/useQuranStore";
+import { getReciterById } from "@/lib/data/reciters";
 import { cn } from "@/lib/utils";
 
 interface SurahDetailClientProps {
@@ -33,6 +38,10 @@ export default function SurahDetailClient({
   ayahs,
   allSurahsList,
 }: SurahDetailClientProps) {
+  const [mounted, setMounted] = useState(false);
+  const [tajweedModalOpen, setTajweedModalOpen] = useState(false);
+  const [reciterModalOpen, setReciterModalOpen] = useState(false);
+  
   const { isPlaying, currentSurah, playAyah, togglePlay } = useAudio();
   const { 
     khatam, 
@@ -40,11 +49,19 @@ export default function SurahDetailClient({
     arabicFontSize, 
     updateFontSize,
     showTranslation,
-    toggleTranslationVisibility
+    toggleTranslationVisibility,
+    isTajweedEnabled,
+    toggleTajweed,
+    selectedReciter
   } = useQuranStore();
 
-  const isCompleted = khatam?.completedSurahs?.includes(surah.number) || false;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isCompleted = mounted && (khatam?.completedSurahs?.includes(surah.number) || false);
   const isSurahPlaying = currentSurah?.number === surah.number && isPlaying;
+  const currentReciter = getReciterById(selectedReciter);
 
   const prevSurahNumber = surah.number > 1 ? surah.number - 1 : null;
   const nextSurahNumber = surah.number < 114 ? surah.number + 1 : null;
@@ -129,6 +146,15 @@ export default function SurahDetailClient({
             </button>
 
             <button
+              onClick={() => setReciterModalOpen(true)}
+              className="px-4 py-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white border border-white/20 text-xs sm:text-sm font-semibold flex items-center gap-2 backdrop-blur-md transition-colors cursor-pointer"
+              title="Ganti Pilihan Qari / Imam"
+            >
+              <Mic2 className="w-4 h-4 text-amber-300" />
+              <span>Qari: <strong className="font-bold text-amber-200">{currentReciter.name.split(" ")[1] || currentReciter.name}</strong></span>
+            </button>
+
+            <button
               onClick={() => toggleSurahCompleted(surah.number)}
               className={cn(
                 "px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 backdrop-blur-md transition-colors cursor-pointer",
@@ -148,43 +174,81 @@ export default function SurahDetailClient({
         </div>
       </div>
 
-      {/* Floating / Sticky Control Bar for Font Size & Translation Toggle */}
-      <div className="bg-white rounded-2xl p-4 border border-stone-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4 sticky top-20 z-30 backdrop-blur-md bg-white/90">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-            <Type className="w-4 h-4 text-emerald-600" />
-            <span>Ukuran Font Arab:</span>
-          </span>
-          <div className="flex items-center gap-1.5">
+      {/* Floating / Sticky Control Bar for Tajweed, Reciter, Font Size & Translation Toggle */}
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-stone-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3 sticky top-16 md:top-20 z-30">
+        {/* Left: Tajweed Toggle & Tajweed Legend */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Tajweed Toggle Button */}
+          <button
+            onClick={toggleTajweed}
+            className={cn(
+              "px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer",
+              mounted && isTajweedEnabled
+                ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs"
+                : "bg-stone-100 hover:bg-stone-200 text-slate-600"
+            )}
+            title="Nyalakan / Matikan Tajwid Berwarna"
+          >
+            <Palette className="w-3.5 h-3.5" />
+            <span>{mounted && isTajweedEnabled ? "Tajwid: Aktif" : "Tajwid: Off"}</span>
+          </button>
+
+          {/* Tajweed Legend Button */}
+          <button
+            onClick={() => setTajweedModalOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Lihat Arti Warna & Hukum Tajwid"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
+            <span>Panduan Warna Tajwid</span>
+          </button>
+
+          {/* Reciter quick button */}
+          <button
+            onClick={() => setReciterModalOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            title="Ganti Suara Imam / Qari"
+          >
+            <Mic2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="max-w-[120px] sm:max-w-[160px] truncate">
+              {currentReciter.name}
+            </span>
+          </button>
+        </div>
+
+        {/* Right: Font Size & Translation Toggle */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Font size picker */}
+          <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl">
+            <span className="text-[11px] font-bold text-slate-500 px-1.5 hidden sm:inline">Ukuran:</span>
             {[24, 28, 32, 36].map((size) => (
               <button
                 key={size}
                 onClick={() => updateFontSize(size)}
                 className={cn(
-                  "w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer",
+                  "w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer",
                   arabicFontSize === size
                     ? "bg-emerald-600 text-white shadow-xs"
-                    : "bg-stone-100 text-slate-600 hover:bg-stone-200"
+                    : "text-slate-600 hover:bg-stone-200"
                 )}
               >
                 {size}
               </button>
             ))}
           </div>
-        </div>
 
-        <div className="flex items-center gap-3">
+          {/* Translation visibility toggle */}
           <button
             onClick={toggleTranslationVisibility}
             className={cn(
-              "px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer",
+              "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer",
               showTranslation
                 ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                 : "bg-stone-100 text-slate-600 hover:bg-stone-200"
             )}
           >
-            {showTranslation ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            <span>{showTranslation ? "Terjemahan Aktif" : "Sembunyikan Terjemahan"}</span>
+            {showTranslation ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline">{showTranslation ? "Terjemahan On" : "Terjemahan Off"}</span>
           </button>
         </div>
       </div>
@@ -238,6 +302,17 @@ export default function SurahDetailClient({
           </Link>
         )}
       </div>
+
+      {/* Modals */}
+      <TajweedLegendModal
+        isOpen={tajweedModalOpen}
+        onClose={() => setTajweedModalOpen(false)}
+      />
+
+      <ReciterSelectorModal
+        isOpen={reciterModalOpen}
+        onClose={() => setReciterModalOpen(false)}
+      />
     </div>
   );
 }

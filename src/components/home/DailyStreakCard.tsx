@@ -16,15 +16,22 @@ const PRAYERS_LIST: { key: keyof Omit<DailyPrayerChecklist, "date">; label: stri
 ];
 
 export default function DailyStreakCard() {
+  const [mounted, setMounted] = React.useState(false);
   const { streak, prayerChecklist, togglePrayerStatus } = useQuranStore();
 
-  const completedCount = [
-    prayerChecklist.fajr,
-    prayerChecklist.dhuhr,
-    prayerChecklist.asr,
-    prayerChecklist.maghrib,
-    prayerChecklist.isha,
-  ].filter(Boolean).length;
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const completedCount = mounted
+    ? [
+        prayerChecklist.fajr,
+        prayerChecklist.dhuhr,
+        prayerChecklist.asr,
+        prayerChecklist.maghrib,
+        prayerChecklist.isha,
+      ].filter(Boolean).length
+    : 0;
 
   const progressPercent = Math.round((completedCount / 5) * 100);
 
@@ -38,8 +45,8 @@ export default function DailyStreakCard() {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-bold text-base text-slate-800">Streak Ibadah Harian</h3>
-              <span className="text-xs bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md border border-amber-200">
-                {streak.current} Hari Aktif
+              <span className="text-xs bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md border border-amber-200" suppressHydrationWarning>
+                {mounted ? streak.current : 1} Hari Aktif
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -48,15 +55,15 @@ export default function DailyStreakCard() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500 bg-stone-50 px-3 py-1.5 rounded-xl border border-stone-200/60 self-start sm:self-auto">
+        <div className="flex items-center gap-2 text-xs text-slate-500 bg-stone-50 px-3 py-1.5 rounded-xl border border-stone-200/60 self-start sm:self-auto" suppressHydrationWarning>
           <Trophy className="w-4 h-4 text-amber-500" />
-          <span>Rekor Terbaik: <strong className="text-slate-800">{streak.best} Hari</strong></span>
+          <span>Rekor Terbaik: <strong className="text-slate-800">{mounted ? streak.best : 1} Hari</strong></span>
         </div>
       </div>
 
       {/* Shalat Check-in Tracker Section */}
       <div className="mt-5 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between" suppressHydrationWarning>
           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
             Check-in Shalat Hari Ini ({completedCount}/5 Wajib)
           </span>

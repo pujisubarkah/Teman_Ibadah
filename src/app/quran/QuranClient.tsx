@@ -12,9 +12,14 @@ interface QuranClientProps {
 }
 
 export default function QuranClient({ initialSurahs }: QuranClientProps) {
+  const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<"all" | "Meccan" | "Medinan">("all");
   const { khatam, lastRead } = useQuranStore();
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const filteredSurahs = useMemo(() => {
     return initialSurahs.filter((surah) => {
@@ -37,7 +42,7 @@ export default function QuranClient({ initialSurahs }: QuranClientProps) {
     });
   }, [initialSurahs, searchQuery, selectedType]);
 
-  const completedCount = khatam?.completedSurahs?.length || 0;
+  const completedCount = mounted ? (khatam?.completedSurahs?.length || 0) : 0;
 
   return (
     <div className="space-y-6 pb-12">

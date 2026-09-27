@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bookmark, LastRead } from "@/lib/types";
+import { Bookmark, LastRead, KhatamState, KhatamReminderSettings } from "@/lib/types";
+
+export type { KhatamState, KhatamReminderSettings };
 
 export interface DailyPrayerChecklist {
   date: string;
@@ -12,13 +14,6 @@ export interface DailyPrayerChecklist {
   isha: boolean;
   dhuha?: boolean;
   tahajjud?: boolean;
-}
-
-export interface KhatamState {
-  targetDays: number;
-  startDate: string;
-  completedSurahs: number[];
-  notes: string;
 }
 
 const STORAGE_KEYS = {
@@ -52,6 +47,8 @@ export function useQuranStore() {
   const [streak, setStreak] = useState({ current: 1, best: 1, lastActive: new Date().toISOString().split("T")[0] });
   const [arabicFontSize, setArabicFontSize] = useState<number>(28);
   const [showTranslation, setShowTranslation] = useState<boolean>(true);
+  const [selectedReciter, setSelectedReciterState] = useState<string>("ar.alafasy");
+  const [isTajweedEnabled, setIsTajweedEnabledState] = useState<boolean>(true);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   // Load from localStorage on mount
@@ -114,6 +111,8 @@ export function useQuranStore() {
         const settings = JSON.parse(savedSettings);
         if (settings.fontSize) setArabicFontSize(settings.fontSize);
         if (typeof settings.showTranslation === "boolean") setShowTranslation(settings.showTranslation);
+        if (settings.selectedReciter) setSelectedReciterState(settings.selectedReciter);
+        if (typeof settings.isTajweedEnabled === "boolean") setIsTajweedEnabledState(settings.isTajweedEnabled);
       }
     } catch (e) {
       console.error("Failed to load local storage:", e);
@@ -183,6 +182,46 @@ export function useQuranStore() {
     });
   };
 
+  const recalibrateKhatamTarget = (addedDays: number) => {
+    setKhatam((prev) => {
+      const currentDays = prev.targetDays || 30;
+      const updated = { ...prev, targetDays: currentDays + addedDays };
+      try {
+        localStorage.setItem(STORAGE_KEYS.KHATAM, JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
+
+  const updateKhatamReminders = (reminders: any) => {
+    setKhatam((prev) => {
+      const updated = { ...prev, reminders };
+      try {
+        localStorage.setItem(STORAGE_KEYS.KHATAM, JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
+
+  const resetKhatamStartDate = (newDateStr?: string) => {
+    setKhatam((prev) => {
+      const updated = {
+        ...prev,
+        startDate: newDateStr || new Date().toISOString().split("T")[0],
+      };
+      try {
+        localStorage.setItem(STORAGE_KEYS.KHATAM, JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
+
   const togglePrayerStatus = (prayerKey: keyof Omit<DailyPrayerChecklist, "date">) => {
     setPrayerChecklist((prev) => {
       const updated = { ...prev, [prayerKey]: !prev[prayerKey] };
@@ -220,6 +259,31 @@ export function useQuranStore() {
     });
   };
 
+  const setSelectedReciter = (reciterId: string) => {
+    setSelectedReciterState(reciterId);
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      const parsed = saved ? JSON.parse(saved) : {};
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...parsed, selectedReciter: reciterId }));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const toggleTajweed = () => {
+    setIsTajweedEnabledState((prev) => {
+      const next = !prev;
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+        const parsed = saved ? JSON.parse(saved) : {};
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify({ ...parsed, isTajweedEnabled: next }));
+      } catch (e) {
+        console.error(e);
+      }
+      return next;
+    });
+  };
+
   return {
     isLoaded,
     bookmarks,
@@ -229,13 +293,20 @@ export function useQuranStore() {
     streak,
     arabicFontSize,
     showTranslation,
+    selectedReciter,
+    isTajweedEnabled,
     saveLastRead,
     toggleBookmark,
     isAyahBookmarked,
     toggleSurahCompleted,
     updateKhatamTarget,
+    recalibrateKhatamTarget,
+    updateKhatamReminders,
+    resetKhatamStartDate,
     togglePrayerStatus,
     updateFontSize,
     toggleTranslationVisibility,
+    setSelectedReciter,
+    toggleTajweed,
   };
 }

@@ -30,6 +30,10 @@ export const metadata: Metadata = {
   description: "Aplikasi web companion ibadah harian Muslim: Al-Quran Reader, Jadwal & Panduan Shalat, Kumpulan Hadits, dan Dzikir Harian.",
   keywords: ["Quran", "Al-Quran", "Jadwal Shalat", "Hadits", "Dzikir", "Khatam Tracker", "Islamic Companion"],
   authors: [{ name: "QuranTrack" }],
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

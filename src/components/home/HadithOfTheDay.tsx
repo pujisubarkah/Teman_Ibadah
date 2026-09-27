@@ -1,15 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { FEATURED_HADITHS } from "@/lib/api/hadith";
 import { ScrollText, Copy, Check, Share2, ArrowRight } from "lucide-react";
 
 export default function HadithOfTheDay() {
   const [copied, setCopied] = useState(false);
-  // Pick today's hadith deterministically based on day of year
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
-  const hadith = FEATURED_HADITHS[dayOfYear % FEATURED_HADITHS.length];
+  const [hadithIndex, setHadithIndex] = useState(0);
+
+  // Pick today's hadith deterministically on client mount
+  useEffect(() => {
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+    setHadithIndex(dayOfYear % FEATURED_HADITHS.length);
+  }, []);
+
+  const hadith = FEATURED_HADITHS[hadithIndex];
 
   const handleCopy = () => {
     const text = `"${hadith.id}"\n— (HR. ${hadith.book} No. ${hadith.number})\nDibagikan via QuranTrack`;

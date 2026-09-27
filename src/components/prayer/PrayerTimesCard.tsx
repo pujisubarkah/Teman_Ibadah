@@ -31,6 +31,7 @@ interface PrayerTimesCardProps {
 }
 
 export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
+  const [mounted, setMounted] = useState(false);
   const [data, setData] = useState<PrayerData>(initialData);
   const [selectedCity, setSelectedCity] = useState("Jakarta");
   const [loading, setLoading] = useState(false);
@@ -38,6 +39,10 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
     getNextPrayer(initialData.timings, initialData.meta.timezone || "Asia/Jakarta")
   );
   const { prayerChecklist, togglePrayerStatus } = useQuranStore();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Client-side refresh on mount to sync with user's client time
   useEffect(() => {
@@ -56,6 +61,8 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
   }, [selectedCity]);
 
   useEffect(() => {
+    if (!mounted) return;
+
     const timer = setInterval(() => {
       if (data?.timings) {
         const tz = data.meta?.timezone || getCityTimezone(selectedCity);
@@ -63,7 +70,7 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [data, selectedCity]);
+  }, [mounted, data, selectedCity]);
 
   const handleCitySelect = async (cityName: string) => {
     setSelectedCity(cityName);
@@ -169,7 +176,7 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
         </div>
 
         {/* Live Next Prayer Banner */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md" suppressHydrationWarning>
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center font-bold text-white">
               <Clock className="w-6 h-6 text-amber-300" />
@@ -179,16 +186,16 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
                 <span className="text-xs font-semibold uppercase tracking-wider text-emerald-100">
                   Waktu Shalat Berikutnya:
                 </span>
-                <span className="bg-amber-400 text-slate-950 text-xs font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-amber-400 text-slate-950 text-xs font-bold px-2 py-0.5 rounded-full" suppressHydrationWarning>
                   {nextInfo.name} ({nextInfo.time})
                 </span>
               </div>
-              <p className="text-2xl font-bold font-mono text-white mt-1">
-                {nextInfo.timeRemaining} lagi
+              <p className="text-2xl font-bold font-mono text-white mt-1" suppressHydrationWarning>
+                {mounted ? `${nextInfo.timeRemaining} lagi` : "Memuat waktu..."}
               </p>
             </div>
           </div>
-          <div className="text-xs text-emerald-100 bg-black/15 px-3.5 py-2 rounded-xl self-start sm:self-auto border border-white/10">
+          <div className="text-xs text-emerald-100 bg-black/15 px-3.5 py-2 rounded-xl self-start sm:self-auto border border-white/10" suppressHydrationWarning>
             Zona: {data.meta.timezone || "Asia/Jakarta"} • Kemenag RI
           </div>
         </div>
@@ -198,7 +205,7 @@ export default function PrayerTimesCard({ initialData }: PrayerTimesCardProps) {
           {prayers.map((p) => {
             const Icon = p.icon;
             const isNext = p.label === nextInfo.name;
-            const checkVal = p.checkKey ? prayerChecklist[p.checkKey as keyof typeof prayerChecklist] : false;
+            const checkVal = mounted && p.checkKey ? prayerChecklist[p.checkKey as keyof typeof prayerChecklist] : false;
 
             return (
               <div

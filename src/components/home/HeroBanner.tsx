@@ -28,6 +28,7 @@ interface HeroBannerProps {
 }
 
 export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
+  const [mounted, setMounted] = useState(false);
   const [prayerData, setPrayerData] = useState<PrayerData>(initialPrayerData);
   const [selectedCity, setSelectedCity] = useState("Jakarta");
   const [loadingCity, setLoadingCity] = useState(false);
@@ -37,8 +38,14 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
   );
   const { lastRead, streak, khatam } = useQuranStore();
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Update current live digital clock & next prayer countdown every second
   useEffect(() => {
+    if (!mounted) return;
+
     const updateClock = () => {
       const tz = prayerData.meta?.timezone || getCityTimezone(selectedCity);
       try {
@@ -64,7 +71,7 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
     updateClock();
     const timer = setInterval(updateClock, 1000);
     return () => clearInterval(timer);
-  }, [prayerData, selectedCity]);
+  }, [mounted, prayerData, selectedCity]);
 
   // Client-side refresh on mount
   useEffect(() => {
@@ -117,16 +124,16 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
           {/* Header row: Live Clock, Hijri Date, City Selector */}
           <div className="relative z-10 flex flex-wrap items-center justify-between gap-2.5 mb-5">
             {/* Live Clock Badge */}
-            <div className="flex items-center gap-2 bg-black/25 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-semibold text-white border border-white/15">
+            <div className="flex items-center gap-2 bg-black/25 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-semibold text-white border border-white/15" suppressHydrationWarning>
               <Clock className="w-3.5 h-3.5 text-emerald-300 animate-pulse" />
-              <span>Jam Sekarang: <strong className="font-mono text-amber-300 text-sm">{currentTimeStr || "--:--:--"}</strong></span>
+              <span>Jam Sekarang: <strong className="font-mono text-amber-300 text-sm" suppressHydrationWarning>{mounted ? (currentTimeStr || "--:--:--") : "--:--:--"}</strong></span>
             </div>
 
             <div className="flex items-center gap-2">
               {/* Hijri Date */}
-              <div className="hidden sm:flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium text-emerald-100 border border-white/10">
+              <div className="hidden sm:flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium text-emerald-100 border border-white/10" suppressHydrationWarning>
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>
+                <span suppressHydrationWarning>
                   {prayerData.date.hijri.day} {prayerData.date.hijri.month.en} {prayerData.date.hijri.year} H
                 </span>
               </div>
@@ -151,49 +158,49 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
           </div>
 
           {/* Next Prayer Countdown Hero Section */}
-          <div className="relative z-10 my-auto py-2 space-y-2">
+          <div className="relative z-10 my-auto py-2 space-y-2" suppressHydrationWarning>
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] uppercase font-bold tracking-widest text-emerald-200">
                 Hitung Mundur Shalat Berikutnya:
               </span>
-              <span className="text-xs bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full font-bold shadow-xs">
+              <span className="text-xs bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full font-bold shadow-xs" suppressHydrationWarning>
                 {nextPrayerInfo.name} {nextPrayerInfo.isToday ? "Hari Ini" : "Besok"} • {nextPrayerInfo.time}
               </span>
             </div>
 
             {/* Big Countdown Timer Display */}
-            <div className="pt-1">
-              <div className="flex items-baseline gap-2 sm:gap-3">
+            <div className="pt-1" suppressHydrationWarning>
+              <div className="flex items-baseline gap-2 sm:gap-3" suppressHydrationWarning>
                 <div className="flex flex-col items-center">
-                  <span className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-mono text-white tracking-tight drop-shadow-xs">
-                    {hoursLeft || "00"}
+                  <span className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-mono text-white tracking-tight drop-shadow-xs" suppressHydrationWarning>
+                    {mounted ? (hoursLeft || "00") : "--"}
                   </span>
                   <span className="text-[10px] uppercase font-semibold text-emerald-200 mt-0.5">Jam</span>
                 </div>
                 <span className="text-3xl sm:text-4xl font-extrabold text-amber-300 font-mono -translate-y-2">:</span>
                 <div className="flex flex-col items-center">
-                  <span className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-mono text-white tracking-tight drop-shadow-xs">
-                    {minsLeft || "00"}
+                  <span className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-mono text-white tracking-tight drop-shadow-xs" suppressHydrationWarning>
+                    {mounted ? (minsLeft || "00") : "--"}
                   </span>
                   <span className="text-[10px] uppercase font-semibold text-emerald-200 mt-0.5">Menit</span>
                 </div>
                 <span className="text-3xl sm:text-4xl font-extrabold text-amber-300 font-mono -translate-y-2">:</span>
                 <div className="flex flex-col items-center">
-                  <span className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-mono text-white tracking-tight drop-shadow-xs">
-                    {secsLeft || "00"}
+                  <span className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-mono text-white tracking-tight drop-shadow-xs" suppressHydrationWarning>
+                    {mounted ? (secsLeft || "00") : "--"}
                   </span>
                   <span className="text-[10px] uppercase font-semibold text-emerald-200 mt-0.5">Detik</span>
                 </div>
               </div>
             </div>
 
-            <p className="text-xs text-emerald-200/90 pt-1 flex items-center gap-1.5">
-              <span>⏳ Sisa waktu <strong>{hoursLeft} jam {minsLeft} menit lagi</strong> menuju kumandang adzan {nextPrayerInfo.name}.</span>
+            <p className="text-xs text-emerald-200/90 pt-1 flex items-center gap-1.5" suppressHydrationWarning>
+              <span>⏳ Sisa waktu <strong suppressHydrationWarning>{mounted ? `${hoursLeft} jam ${minsLeft} menit lagi` : "menghitung..."}</strong> menuju kumandang adzan {nextPrayerInfo.name}.</span>
             </p>
           </div>
 
           {/* Fast Prayer Times Bar */}
-          <div className="relative z-10 pt-5 mt-3 border-t border-white/15 grid grid-cols-5 gap-2 text-center">
+          <div className="relative z-10 pt-5 mt-3 border-t border-white/15 grid grid-cols-5 gap-2 text-center" suppressHydrationWarning>
             {[
               { name: "Subuh", time: prayerData.timings.Fajr },
               { name: "Dzuhur", time: prayerData.timings.Dhuhr },
@@ -235,13 +242,13 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
                   <p className="text-xs text-slate-400">Lanjutkan tilawah Anda</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full text-xs font-semibold">
+              <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full text-xs font-semibold" suppressHydrationWarning>
                 <Flame className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                <span>Streak {streak.current} Hari</span>
+                <span>Streak {mounted ? streak.current : 1} Hari</span>
               </div>
             </div>
 
-            {lastRead ? (
+            {mounted && lastRead ? (
               <div className="bg-stone-50 rounded-2xl p-4 border border-stone-200/60 my-2">
                 <div className="flex items-center justify-between">
                   <div>
@@ -273,34 +280,56 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
             )}
 
             <Link
-              href={lastRead ? `/quran/${lastRead.surahNumber}` : "/quran/1"}
+              href={mounted && lastRead ? `/quran/${lastRead.surahNumber}` : "/quran/1"}
               className="mt-2 w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm shadow-emerald-600/20"
             >
-              <span>{lastRead ? "Lanjut Membaca" : "Buka Surah Al-Fatihah"}</span>
+              <span>{mounted && lastRead ? "Lanjut Membaca" : "Buka Surah Al-Fatihah"}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          {/* Khatam Summary Card */}
-          <div className="bg-white rounded-3xl p-5 border border-stone-200/80 shadow-xs flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shrink-0 border border-amber-200/60">
-                <span className="text-sm">{khatamPercent}%</span>
+          {/* Khatam Summary & On-Track Card */}
+          <div className="bg-white rounded-3xl p-5 border border-stone-200/80 shadow-xs hover:border-emerald-300 transition-colors flex flex-col justify-between gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold shrink-0 border border-amber-200/60" suppressHydrationWarning>
+                  <span className="text-sm">{mounted ? khatamPercent : 0}%</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="font-bold text-xs text-slate-800">Target Khatam Qur'an</h4>
+                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200" suppressHydrationWarning>
+                      {mounted ? (completedSurahCount >= 114 ? "Khatam" : "On-Track") : "On-Track"}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-0.5" suppressHydrationWarning>
+                    {mounted ? completedSurahCount : 0} dari 114 Surah terselesaikan
+                  </p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-bold text-xs text-slate-800">Target Khatam Quran</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  {completedSurahCount} dari 114 Surah terselesaikan
-                </p>
-              </div>
+
+              <Link
+                href="/khatam"
+                className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-slate-700 text-xs font-semibold flex items-center gap-1 transition-colors shrink-0"
+              >
+                <span>Tracker</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
-            <Link
-              href="/khatam"
-              className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-slate-700 text-xs font-semibold flex items-center gap-1 transition-colors shrink-0"
-            >
-              <span>Atur Target</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
+
+            {/* Quick Next Surah Prompt */}
+            {mounted && completedSurahCount < 114 && (
+              <div className="pt-2 border-t border-stone-100 flex items-center justify-between text-xs text-slate-500">
+                <span className="text-[11px] truncate">🎯 Target berikutnya: Surah ke-{completedSurahCount + 1}</span>
+                <Link
+                  href={`/quran/${completedSurahCount + 1}`}
+                  className="font-bold text-emerald-600 hover:text-emerald-700 text-xs shrink-0 flex items-center gap-0.5"
+                >
+                  <span>Baca</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

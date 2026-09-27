@@ -29,12 +29,14 @@ export async function getSurahDetail(number: number): Promise<SurahDetail> {
   }
 }
 
-export function getAudioUrl(ayahNumber: number): string {
-  return `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayahNumber}.mp3`;
+import { buildAyahAudioUrl, DEFAULT_RECITER_ID } from "@/lib/data/reciters";
+
+export function getAudioUrl(ayahNumber: number, reciterId: string = DEFAULT_RECITER_ID): string {
+  return buildAyahAudioUrl(ayahNumber, reciterId);
 }
 
 /**
- * Mengambil detail surah lengkap dengan teks Arab Uthmani & Terjemahan Bahasa Indonesia
+ * Mengambil detail surah lengkap dengan teks Arab Uthmani, Tajweed berwarna, & Terjemahan Bahasa Indonesia
  */
 export async function getSurahWithTranslation(number: number): Promise<{
   surah: Surah;
@@ -42,7 +44,7 @@ export async function getSurahWithTranslation(number: number): Promise<{
 }> {
   try {
     const res = await fetch(
-      `https://api.alquran.cloud/v1/surah/${number}/editions/quran-uthmani,id.indonesian`,
+      `https://api.alquran.cloud/v1/surah/${number}/editions/quran-uthmani,quran-tajweed,id.indonesian`,
       {
         next: { revalidate: 86400 },
       }
@@ -57,15 +59,21 @@ export async function getSurahWithTranslation(number: number): Promise<{
       (e: { edition: { identifier: string } }) => e.edition.identifier === "quran-uthmani"
     ) || data.data[0];
 
+    const tajweedEdition = data.data.find(
+      (e: { edition: { identifier: string } }) => e.edition.identifier === "quran-tajweed"
+    );
+
     const indonesianEdition = data.data.find(
       (e: { edition: { identifier: string } }) => e.edition.identifier === "id.indonesian"
     ) || data.data[1];
 
     const ayahs: Ayah[] = uthmaniEdition.ayahs.map(
       (ayah: Ayah, index: number) => {
+        const tajweedAyah = tajweedEdition?.ayahs[index];
         const transAyah = indonesianEdition?.ayahs[index];
         return {
           ...ayah,
+          tajweedText: tajweedAyah?.text || ayah.text,
           translation: transAyah?.text || "",
           audio: getAudioUrl(ayah.number),
         };

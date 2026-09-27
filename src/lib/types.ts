@@ -10,6 +10,7 @@ export interface Surah {
 export interface Ayah {
   number: number;
   text: string;
+  tajweedText?: string;
   numberInSurah: number;
   juz: number;
   manzil: number;
@@ -19,6 +20,14 @@ export interface Ayah {
   sajda: boolean | object;
   translation?: string;
   audio?: string;
+}
+
+export interface ReciterOption {
+  id: string;
+  name: string;
+  arabicName?: string;
+  subtitle: string;
+  bitrate: number;
 }
 
 export interface SurahDetail extends Surah {
@@ -142,6 +151,21 @@ export interface LastRead {
   ayahNumber: number;
   totalAyahs: number;
   timestamp: number;
+}
+
+export interface KhatamReminderSettings {
+  enabled: boolean;
+  times: string[]; // e.g. ["05:00", "18:30", "21:00"]
+  soundEnabled: boolean;
+  dailyMethod: "per-day" | "per-prayer";
+}
+
+export interface KhatamState {
+  targetDays: number;
+  startDate: string;
+  completedSurahs: number[];
+  notes: string;
+  reminders?: KhatamReminderSettings;
 }
 
 export interface KhatamPlan {

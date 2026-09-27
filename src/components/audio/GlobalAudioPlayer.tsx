@@ -12,9 +12,13 @@ import {
   Repeat, 
   Gauge, 
   ChevronUp, 
-  ChevronDown 
+  ChevronDown,
+  Mic2
 } from "lucide-react";
 import { formatTime, cn } from "@/lib/utils";
+import { useQuranStore } from "@/lib/store/useQuranStore";
+import { getReciterById } from "@/lib/data/reciters";
+import ReciterSelectorModal from "./ReciterSelectorModal";
 
 export default function GlobalAudioPlayer() {
   const {
@@ -36,72 +40,82 @@ export default function GlobalAudioPlayer() {
     stop,
   } = useAudio();
 
+  const { selectedReciter } = useQuranStore();
   const [isSpeedMenuOpen, setIsSpeedMenuOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isReciterModalOpen, setIsReciterModalOpen] = useState(false);
 
   if (!currentAyah || !currentSurah) {
     return null;
   }
 
+  const currentReciter = getReciterById(selectedReciter);
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
   const speeds = [0.75, 1, 1.25, 1.5, 2];
 
   return (
-    <aside aria-label="Pemutar Audio Al-Quran" className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:w-[480px] z-50 animate-in slide-in-from-bottom-5 duration-300">
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-stone-200/90 overflow-hidden ring-1 ring-emerald-500/10">
-        {/* Progress Bar (Clickable) */}
-        <div
-          role="slider"
-          aria-label="Progres pemutaran audio"
-          aria-valuemin={0}
-          aria-valuemax={duration || 100}
-          aria-valuenow={currentTime}
-          tabIndex={0}
-          className="w-full h-1.5 bg-stone-100 hover:h-2.5 transition-all cursor-pointer relative group"
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const clickPos = (e.clientX - rect.left) / rect.width;
-            seek(clickPos * duration);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "ArrowRight") seek(Math.min(duration, currentTime + 5));
-            if (e.key === "ArrowLeft") seek(Math.max(0, currentTime - 5));
-          }}
-        >
+    <>
+      <aside aria-label="Pemutar Audio Al-Quran" className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:w-[500px] z-50 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-stone-200/90 overflow-hidden ring-1 ring-emerald-500/10">
+          {/* Progress Bar (Clickable) */}
           <div
-            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 relative transition-all"
-            style={{ width: `${progressPercent}%` }}
+            role="slider"
+            aria-label="Progres pemutaran audio"
+            aria-valuemin={0}
+            aria-valuemax={duration || 100}
+            aria-valuenow={currentTime}
+            tabIndex={0}
+            className="w-full h-1.5 bg-stone-100 hover:h-2.5 transition-all cursor-pointer relative group"
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const clickPos = (e.clientX - rect.left) / rect.width;
+              seek(clickPos * duration);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight") seek(Math.min(duration, currentTime + 5));
+              if (e.key === "ArrowLeft") seek(Math.max(0, currentTime - 5));
+            }}
           >
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-emerald-700 rounded-full shadow-md scale-0 group-hover:scale-100 transition-transform" />
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-3.5 sm:p-4">
-          <div className="flex items-center justify-between gap-3">
-            {/* Info */}
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200">
-                {currentAyah.numberInSurah}
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-sm text-slate-800 truncate">
-                    {currentSurah.name} ({currentSurah.englishName})
-                  </p>
-                  <span className="text-[10px] bg-emerald-50 text-emerald-700 font-medium px-1.5 py-0.5 rounded-sm border border-emerald-200/60 shrink-0">
-                    Ayat {currentAyah.numberInSurah}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>/</span>
-                  <span>{formatTime(duration)}</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span className="hidden sm:inline truncate">Misyari Rasyid Al-Afasy</span>
-                </div>
-              </div>
+            <div
+              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 relative transition-all"
+              style={{ width: `${progressPercent}%` }}
+            >
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-emerald-700 rounded-full shadow-md scale-0 group-hover:scale-100 transition-transform" />
             </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-3.5 sm:p-4">
+            <div className="flex items-center justify-between gap-3">
+              {/* Info */}
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0 border border-emerald-200">
+                  {currentAyah.numberInSurah}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm text-slate-800 truncate">
+                      {currentSurah.name} ({currentSurah.englishName})
+                    </p>
+                    <span className="text-[10px] bg-emerald-50 text-emerald-700 font-medium px-1.5 py-0.5 rounded-sm border border-emerald-200/60 shrink-0">
+                      Ayat {currentAyah.numberInSurah}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                    <span>{formatTime(currentTime)}</span>
+                    <span>/</span>
+                    <span>{formatTime(duration)}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <button
+                      onClick={() => setIsReciterModalOpen(true)}
+                      className="hidden sm:inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-medium hover:underline cursor-pointer truncate max-w-[140px]"
+                      title="Klik untuk ganti Qari / Suara Imam"
+                    >
+                      <Mic2 className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{currentReciter.name.split(" ")[1] || currentReciter.name}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
 
             {/* Controls */}
             <div className="flex items-center gap-1 sm:gap-2 shrink-0">
@@ -193,5 +207,11 @@ export default function GlobalAudioPlayer() {
         </div>
       </div>
     </aside>
-  );
+
+    <ReciterSelectorModal
+      isOpen={isReciterModalOpen}
+      onClose={() => setIsReciterModalOpen(false)}
+    />
+  </>
+);
 }
