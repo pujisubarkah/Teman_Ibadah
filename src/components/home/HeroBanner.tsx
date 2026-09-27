@@ -19,7 +19,10 @@ import {
   getNextPrayer, 
   INDONESIAN_CITIES, 
   getPrayerTimesByCity,
-  getCityTimezone 
+  getPrayerTimesByCoords,
+  getCityTimezone,
+  formatIndonesianHijri,
+  formatIndonesianGregorian 
 } from "@/lib/api/prayer";
 import { useQuranStore } from "@/lib/store/useQuranStore";
 
@@ -40,6 +43,24 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
 
   useEffect(() => {
     setMounted(true);
+    try {
+      const savedLoc = localStorage.getItem("teman_ibadah_prayer_loc");
+      if (savedLoc) {
+        const parsed = JSON.parse(savedLoc);
+        if (parsed.lat && parsed.lng) {
+          setSelectedCity(parsed.cityName || "Lokasi Saya");
+          getPrayerTimesByCoords(parsed.lat, parsed.lng).then((res) => {
+            if (res) {
+              setPrayerData(res);
+              setNextPrayerInfo(getNextPrayer(res.timings, res.meta?.timezone || "Asia/Jakarta"));
+            }
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }, []);
 
   // Update current live digital clock & next prayer countdown every second
@@ -134,7 +155,7 @@ export default function HeroBanner({ initialPrayerData }: HeroBannerProps) {
               <div className="hidden sm:flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-medium text-emerald-100 border border-white/10" suppressHydrationWarning>
                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                 <span suppressHydrationWarning>
-                  {prayerData.date.hijri.day} {prayerData.date.hijri.month.en} {prayerData.date.hijri.year} H
+                  {formatIndonesianHijri(prayerData.date.hijri)}
                 </span>
               </div>
 
