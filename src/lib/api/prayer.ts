@@ -233,18 +233,22 @@ export async function getPrayerTimesByCity(
   try {
     const timezone = getCityTimezone(city);
     const dateStr = getCurrentDateFormatted(timezone);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
     const res = await fetch(
       `https://api.aladhan.com/v1/timingsByCity/${dateStr}?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&method=20`,
-      { next: { revalidate: 1800 } }
+      { next: { revalidate: 1800 }, signal: controller.signal }
     );
+    clearTimeout(timeoutId);
+
     if (!res.ok) throw new Error("Gagal mengambil jadwal shalat");
     const data = await res.json();
     if (data.data && !data.data.meta.timezone) {
       data.data.meta.timezone = timezone;
     }
     return data.data;
-  } catch (error) {
-    console.error("Prayer times fetch error:", error);
+  } catch {
     return getFallbackPrayerData(city);
   }
 }
@@ -255,15 +259,19 @@ export async function getPrayerTimesByCoords(
 ): Promise<PrayerData> {
   try {
     const timestamp = Math.floor(Date.now() / 1000);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
     const res = await fetch(
       `https://api.aladhan.com/v1/timings/${timestamp}?latitude=${lat}&longitude=${lng}&method=20`,
-      { next: { revalidate: 1800 } }
+      { next: { revalidate: 1800 }, signal: controller.signal }
     );
+    clearTimeout(timeoutId);
+
     if (!res.ok) throw new Error("Gagal mengambil jadwal shalat koordinat");
     const data = await res.json();
     return data.data;
-  } catch (error) {
-    console.error("Prayer times coords fetch error:", error);
+  } catch {
     return getFallbackPrayerData("Lokasi Anda");
   }
 }

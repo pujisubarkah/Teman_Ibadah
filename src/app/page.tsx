@@ -1,5 +1,6 @@
 import React from "react";
 import HeroBanner from "@/components/home/HeroBanner";
+import RamadhanCountdownCard from "@/components/home/RamadhanCountdownCard";
 import QuickNavigation from "@/components/home/QuickNavigation";
 import DailyStreakCard from "@/components/home/DailyStreakCard";
 import HadithOfTheDay from "@/components/home/HadithOfTheDay";
@@ -19,6 +20,9 @@ export default async function HomePage() {
       {/* Hero Banner with Prayer Timer & Last Read */}
       <HeroBanner initialPrayerData={prayerData} />
 
+      {/* Ramadan Countdown Card with Doa & Interactive Aamiin */}
+      <RamadhanCountdownCard />
+
       {/* Daily Streak & Prayer Checklist */}
       <DailyStreakCard />
 
@@ -30,3 +34,4 @@ export default async function HomePage() {
     </div>
   );
 }
+

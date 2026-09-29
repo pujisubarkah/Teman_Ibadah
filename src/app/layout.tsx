@@ -5,6 +5,7 @@ import { AudioProvider } from "@/context/AudioContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import GlobalAudioPlayer from "@/components/audio/GlobalAudioPlayer";
+import PWAInstaller from "@/components/layout/PWAInstaller";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,13 +27,25 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "QuranTrack — Islamic Daily Companion",
+  title: "Teman Ibadah — Islamic Daily Companion",
   description: "Aplikasi web companion ibadah harian Muslim: Al-Quran Reader, Jadwal & Panduan Shalat, Kumpulan Hadits, dan Dzikir Harian.",
-  keywords: ["Quran", "Al-Quran", "Jadwal Shalat", "Hadits", "Dzikir", "Khatam Tracker", "Islamic Companion"],
-  authors: [{ name: "QuranTrack" }],
+  keywords: ["Quran", "Al-Quran", "Jadwal Shalat", "Hadits", "Dzikir", "Khatam Tracker", "Teman Ibadah", "PWA"],
+  authors: [{ name: "Teman Ibadah" }],
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Teman Ibadah",
+  },
   icons: {
-    icon: "/favicon.svg",
-    apple: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192x192.svg", sizes: "192x192", type: "image/svg+xml" },
+      { url: "/icons/icon-512x512.svg", sizes: "512x512", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/icons/icon-192x192.svg", sizes: "192x192", type: "image/svg+xml" },
+    ],
   },
 };
 
@@ -50,6 +63,7 @@ export default function RootLayout({
             {children}
           </main>
           <GlobalAudioPlayer />
+          <PWAInstaller />
           <Footer />
         </AudioProvider>
       </body>
