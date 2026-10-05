@@ -8,10 +8,20 @@ import {
   Target, 
   Bookmark, 
   Volume2, 
-  CircleDot
+  CircleDot,
+  GraduationCap
 } from "lucide-react";
 
 const FEATURES = [
+  {
+    title: "Belajar Ngaji (Metode Ummi)",
+    description: "Panduan belajar membaca tartil bertahap Jilid 1–6 dengan ketukan, audio & kuis.",
+    href: "/ummi",
+    icon: GraduationCap,
+    badge: "Jilid 1 - 6",
+    color: "from-teal-500 to-emerald-600",
+    bgColor: "bg-teal-50 text-teal-800 border-teal-200/80",
+  },
   {
     title: "Al-Quran Reader",
     description: "114 Surah lengkap audio per ayat Al-Afasy, terjemahan Indonesia & latin.",

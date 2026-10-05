@@ -11,17 +11,19 @@ import {
   Bookmark, 
   Menu, 
   X,
-  Target
+  Target,
+  GraduationCap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { name: "Beranda", href: "/", icon: Sparkles },
   { name: "Al-Quran", href: "/quran", icon: BookOpen },
+  { name: "Metode Ummi", href: "/ummi", icon: GraduationCap },
   { name: "Jadwal & Shalat", href: "/shalat", icon: Compass },
   { name: "Hadits", href: "/hadits", icon: ScrollText },
   { name: "Dzikir & Doa", href: "/dzikir", icon: Sparkles },
-  { name: "Khatam Tracker", href: "/khatam", icon: Target },
+  { name: "Khatam", href: "/khatam", icon: Target },
   { name: "Bookmark", href: "/bookmark", icon: Bookmark },
 ];
 

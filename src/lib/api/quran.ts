@@ -1,17 +1,24 @@
 import { Surah, SurahDetail, Ayah } from "@/lib/types";
+import { FALLBACK_SURAHS } from "@/lib/data/surahList";
 
 // lib/api/quran.ts
 export async function getAllSurahs(): Promise<Surah[]> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
     const res = await fetch("https://api.alquran.cloud/v1/surah", {
       next: { revalidate: 86400 }, // Cache for 24 hours
+      signal: controller.signal,
     });
-    if (!res.ok) throw new Error("Gagal mengambil daftar surah");
+    clearTimeout(timeoutId);
+
+    if (!res.ok) return FALLBACK_SURAHS;
     const data = await res.json();
-    return data.data;
+    return data.data || FALLBACK_SURAHS;
   } catch (error) {
-    console.error("Error fetching all surahs:", error);
-    throw error;
+    console.warn("Using fallback surahs due to fetch timeout/error:", error);
+    return FALLBACK_SURAHS;
   }
 }
 
